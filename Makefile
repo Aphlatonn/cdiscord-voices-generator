@@ -6,10 +6,10 @@ CFLAGS = -Wall -g
 TARGET = bot.out
 
 # src files
-SRC = main.c
+SRC = main.c database.c
 
 # libs
-LIB = -lcurl -ldiscord
+LIB = -lcurl -ldiscord -lsqlite3
 
 # object files
 OBJ = $(SRC:.c=.o)
