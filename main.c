@@ -11,7 +11,7 @@ void on_ready(struct discord *client, const struct discord_ready *event) {
 
 int main(int argc, char *argv[]) {
   // config file name
-  const char *config_file = argc > 1 ? argv[1] : "../config.json";
+  const char *config_file = argc > 1 ? argv[1] : "./config.json";
 
   ccord_global_init();
   // login to discord
