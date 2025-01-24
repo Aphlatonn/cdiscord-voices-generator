@@ -19,7 +19,11 @@ all: $(TARGET)
 
 # build the executable
 $(TARGET): $(OBJ)
-	$(CC) ${CFLAGS} $(OBJ) -o $(TARGET) $(LIB)
+	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET) $(LIB)
+
+# compile .c files to .o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # clean up build artifacts
 clean:
