@@ -9,6 +9,7 @@ pkgs.mkShell {
     pkgs.clang-tools
     pkgs.concord
     pkgs.sqlite
+    pkgs.sqlitebrowser
   ];
 
   shellHook = ''zsh'';
