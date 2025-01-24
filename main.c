@@ -18,6 +18,9 @@ int main(int argc, char *argv[]) {
   struct discord *client = discord_config_init(config_file);
   assert(NULL != client && "Couldn't initialize client");
 
+  // add voice state update intents
+  discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
+
   // register ready event
   discord_set_on_ready(client, &on_ready);
 
