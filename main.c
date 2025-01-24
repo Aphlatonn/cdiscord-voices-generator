@@ -1,3 +1,4 @@
+#include "database.h"
 #include <assert.h>
 #include <concord/discord.h>
 #include <concord/log.h>
@@ -18,6 +19,24 @@ int main(int argc, char *argv[]) {
   struct discord *client = discord_config_init(config_file);
   assert(NULL != client && "Couldn't initialize client");
 
+  // initialize the database
+  if (initialize_database("./database.db") != 0) {
+    discord_cleanup(client);
+    ccord_global_cleanup();
+    return -1;
+  } else {
+    log_info("Database has been initialized");
+  }
+
+  // create the tables
+  if (create_tables() != 0) {
+    discord_cleanup(client);
+    ccord_global_cleanup();
+    return -1;
+  } else {
+    log_info("Tables has been created");
+  }
+
   // add voice state update intents
   discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
 
@@ -30,4 +49,7 @@ int main(int argc, char *argv[]) {
   // release memory
   discord_cleanup(client);
   ccord_global_cleanup();
+  close_database();
+
+  return 0;
 }
