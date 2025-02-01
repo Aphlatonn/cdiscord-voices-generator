@@ -6,7 +6,7 @@ CFLAGS = -Wall -g
 TARGET = bot.out
 
 # src files
-SRC = main.c database.c commands.c utils.c
+SRC = main.c database.c commands.c utils.c parser.c
 
 # libs
 LIB = -lcurl -ldiscord -lsqlite3
