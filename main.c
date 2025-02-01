@@ -1,12 +1,9 @@
-#include <assert.h>
 #include <concord/discord.h>
 #include <concord/log.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "commands.h"
 #include "database.h"
+#include "parser.h"
 #include "utils.h"
 
 void on_ready(struct discord *client, const struct discord_ready *event) {
@@ -37,19 +34,30 @@ void on_message_create(struct discord *client,
 }
 
 int main(int argc, char *argv[]) {
-  // config file name
-  const char *config_file = argc > 1 ? argv[1] : "./config.json";
+  int returnStatusCode = -1;
 
-  ccord_global_init();
-  // login to discord
-  struct discord *client = discord_config_init(config_file);
-  assert(NULL != client && "Couldn't initialize client");
+  // get config files names
+  const char *user_config_file = argc > 1 ? argv[1] : "./user-config.conf";
+  const char *bot_config_file = argc > 2 ? argv[2] : "./bot-config.json";
 
-  int returnStatusCode = 0;
+  // load the config
+  if (load_config(user_config_file) != 0) {
+    log_error("Couldn't open config file");
+    goto cleanup;
+  } else {
+    log_info("Config has been loaded");
+  }
+
+  // get the token
+  const char *token = config_get_str("discord.token");
+  if (token == 0) {
+    log_error("Couldn't find token in config");
+    goto cleanup;
+  }
 
   // initialize the database
   if (initialize_database("./database.db") != 0) {
-    returnStatusCode = -1;
+    log_error("Couldn't initialize database");
     goto cleanup;
   } else {
     log_info("Database has been initialized");
@@ -57,11 +65,23 @@ int main(int argc, char *argv[]) {
 
   // create the tables
   if (create_tables() != 0) {
-    returnStatusCode = -1;
+    log_error("Couldn't create database tables");
     goto cleanup;
   } else {
     log_info("Tables has been created");
   }
+
+  // login to discord
+  ccord_global_init();
+  struct discord *client = discord_config_init(bot_config_file);
+  if (client == 0) {
+    log_error("Couldn't initialize client");
+    goto cleanup;
+  } else {
+    log_info("Client has been initialized");
+  }
+
+  returnStatusCode = 0;
 
   // add voice state update intent and message intent
   discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
@@ -74,10 +94,12 @@ int main(int argc, char *argv[]) {
   // run the client
   discord_run(client);
 
-  // release memory
+// release memory
 cleanup:
-  discord_cleanup(client);
+  if (client != 0)
+    discord_cleanup(client);
   ccord_global_cleanup();
   close_database();
+  free_config();
   return returnStatusCode;
 }
