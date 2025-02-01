@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
   // get config files names
   const char *user_config_file = argc > 1 ? argv[1] : "./user-config.conf";
   const char *bot_config_file = argc > 2 ? argv[2] : "./bot-config.json";
+  const char *database_file = argc > 3 ? argv[3] : "./database.db";
 
   // load the config
   if (load_config(user_config_file) != 0) {
@@ -48,15 +49,8 @@ int main(int argc, char *argv[]) {
     log_info("Config has been loaded");
   }
 
-  // get the token
-  const char *token = config_get_str("discord.token");
-  if (token == 0) {
-    log_error("Couldn't find token in config");
-    goto cleanup;
-  }
-
   // initialize the database
-  if (initialize_database("./database.db") != 0) {
+  if (initialize_database(database_file) != 0) {
     log_error("Couldn't initialize database");
     goto cleanup;
   } else {
