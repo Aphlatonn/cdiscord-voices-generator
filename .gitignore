@@ -1,2 +1,3 @@
 config.json
 database.db
+*.log
