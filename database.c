@@ -1,6 +1,7 @@
-#include "database.h"
 #include <sqlite3.h>
 #include <stdio.h>
+
+#include "database.h"
 
 static sqlite3 *db = 0;
 
