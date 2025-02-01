@@ -6,7 +6,7 @@ CFLAGS = -Wall -g
 TARGET = bot.out
 
 # src files
-SRC = main.c database.c
+SRC = main.c database.c commands.c utils.c
 
 # libs
 LIB = -lcurl -ldiscord -lsqlite3
@@ -27,4 +27,4 @@ $(TARGET): $(OBJ)
 
 # clean up build artifacts
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGET) *.log
