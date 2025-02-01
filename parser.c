@@ -19,11 +19,15 @@ int add_config_entry(char *key, char *value) {
     return -1;
   }
 
-  new_entry->value = strdup(value);
-  if (new_entry->value == 0) {
-    free(new_entry->key);
-    free(new_entry);
-    return -1;
+  if (value != 0) {
+    new_entry->value = strdup(value);
+    if (new_entry->value == 0) {
+      free(new_entry->key);
+      free(new_entry);
+      return -1;
+    }
+  } else {
+    new_entry->value = 0;
   }
 
   new_entry->next = 0;
@@ -69,16 +73,21 @@ int load_config(const char *filepath) {
   return 0;
 }
 
-char *config_get_str(char *key) {
+enum CONFIG_STATUS config_get_str(char *key, char *dist) {
   struct config_entry *temp = config;
   while (temp) {
     if (strcmp(key, temp->key) == 0) {
-      return temp->value;
+      if (temp->value == 0)
+        return CONFIG_NO_VALUE;
+      else {
+        dist = temp->value;
+        return CONFIG_GOOD;
+      }
     }
 
     temp = temp->next;
   };
-  return 0;
+  return CONFIG_NO_ENTRY;
 }
 
 void free_config(void) {
