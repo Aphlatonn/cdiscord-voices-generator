@@ -1,5 +1,6 @@
 #include <concord/discord.h>
 #include <concord/log.h>
+#include <string.h>
 
 #include "commands.h"
 #include "database.h"
@@ -16,14 +17,27 @@ void on_message_create(struct discord *client,
   if (event->author->bot)
     return;
 
-  const char *prefix = "!";
-  if (!starts_with(event->content, prefix)) {
+  // get the prefix
+  char *prefix = 0;
+  switch (config_get_str("bot.prefix", &prefix)) {
+  case CONFIG_NO_ENTRY:
+    prefix = "!";
+    log_warn("CONFIG: bot.prefix entry is not set");
+    break;
+  case CONFIG_NO_VALUE:
+    prefix = "!";
+    log_warn("CONFIG: bot.prefix has no value");
+    break;
+  case CONFIG_GOOD:
+    break;
+  };
+
+  if (!starts_with(event->content, prefix))
     return;
-  }
 
   // find the command
-  // TODO: replace 1 with the prefix lenght
-  const command *cmd = get_command(event->content + 1);
+  // DONE: replace 1 with the prefix length
+  const command *cmd = get_command(event->content + strlen(prefix));
 
   // return if the commands was not found
   if (cmd == 0)
