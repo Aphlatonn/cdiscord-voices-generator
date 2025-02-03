@@ -73,21 +73,26 @@ int load_config(const char *filepath) {
   return 0;
 }
 
-enum CONFIG_STATUS config_get_str(char *key, char *dist) {
+struct config_entry *config_get_entry(char *key) {
   struct config_entry *temp = config;
   while (temp) {
-    if (strcmp(key, temp->key) == 0) {
-      if (temp->value == 0)
-        return CONFIG_NO_VALUE;
-      else {
-        dist = temp->value;
-        return CONFIG_GOOD;
-      }
-    }
+    if (strcmp(key, temp->key) == 0)
+      return temp;
+    else
+      temp = temp->next;
+  }
+  return 0;
+}
 
-    temp = temp->next;
-  };
-  return CONFIG_NO_ENTRY;
+enum CONFIG_STATUS config_get_str(char *key, char **dist) {
+  struct config_entry *entry = config_get_entry(key);
+  if (entry == 0)
+    return CONFIG_NO_ENTRY;
+  if (entry->value == 0)
+    return CONFIG_NO_VALUE;
+
+  *dist = entry->value;
+  return CONFIG_GOOD;
 }
 
 void free_config(void) {
