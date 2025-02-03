@@ -1,11 +1,24 @@
 #include <concord/discord.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "commands.h"
+#include "parser.h"
 #include "utils.h"
 
 void cmd_help(struct discord *client, const struct discord_message *event) {
+  // get he prefix
+  char *prefix = 0;
+  config_get_str("bot.prefix", &prefix);
+  if (prefix == 0)
+    prefix = "!";
+
+  char buff[strlen(prefix) + 20];
+  sprintf(buff, "commands prefix is %s", prefix);
+
+  // send the message
   struct discord_create_message params = {
-      .content = "commands prefix is !",
+      .content = buff,
   };
   discord_create_message(client, event->channel_id, &params, 0);
 }
