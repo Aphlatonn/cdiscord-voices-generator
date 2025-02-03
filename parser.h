@@ -17,7 +17,7 @@ enum CONFIG_STATUS {
 int load_config(const char *filepath);
 
 // get a string value using a key
-enum CONFIG_STATUS config_get_str(char *key, char *dist);
+enum CONFIG_STATUS config_get_str(char *key, char **dist);
 
 // release the memory
 void free_config(void);
