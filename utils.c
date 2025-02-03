@@ -1,6 +1,9 @@
 #include <string.h>
 
 int starts_with(char *str, char *prefix) {
+  if (prefix == 0)
+    return 0;
+
   while (*prefix) {
     if (*str != *prefix) {
       return 0;
