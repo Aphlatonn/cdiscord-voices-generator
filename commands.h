@@ -5,6 +5,7 @@
 
 typedef struct {
   const char *name;
+  const char **aliases;
   void (*run)(struct discord *client, const struct discord_message *event);
 } command;
 
