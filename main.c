@@ -46,6 +46,20 @@ void on_message_create(struct discord *client,
   cmd->run(client, event);
 }
 
+void on_voice_state_update(struct discord *client,
+                           const struct discord_voice_state *event) {
+  if (event->channel_id != 0) {
+    // member join channel
+    log_info(">> Member %s join %lu", event->member->user->username,
+             event->channel_id);
+
+  } else {
+    // member left channel
+    log_info(">> Member %s left %lu", event->member->user->username,
+             event->channel_id);
+  }
+}
+
 int main(int argc, char *argv[]) {
   int returnStatusCode = -1;
 
@@ -93,6 +107,7 @@ int main(int argc, char *argv[]) {
   // register events
   discord_set_on_ready(client, &on_ready);
   discord_set_on_message_create(client, &on_message_create);
+  discord_set_on_voice_state_update(client, &on_voice_state_update);
 
   // run the client
   discord_run(client);
