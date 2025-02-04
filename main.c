@@ -36,7 +36,6 @@ void on_message_create(struct discord *client,
     return;
 
   // find the command
-  // DONE: replace 1 with the prefix length
   const command *cmd = get_command(event->content + strlen(prefix));
 
   // return if the commands was not found
@@ -71,14 +70,6 @@ int main(int argc, char *argv[]) {
     log_info("Database has been initialized");
   }
 
-  // create the tables
-  if (create_tables() != 0) {
-    log_error("Couldn't create database tables");
-    goto cleanup;
-  } else {
-    log_info("Tables has been created");
-  }
-
   // login to discord
   ccord_global_init();
   struct discord *client = discord_config_init(bot_config_file);
@@ -91,11 +82,15 @@ int main(int argc, char *argv[]) {
 
   returnStatusCode = 0;
 
+  // enable cache
+  discord_cache_enable(client, DISCORD_CACHE_GUILDS);
+  discord_cache_enable(client, DISCORD_CACHE_MESSAGES);
+
   // add voice state update intent and message intent
   discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
   discord_add_intents(client, DISCORD_GATEWAY_MESSAGE_CONTENT);
 
-  // register ready and message create events
+  // register events
   discord_set_on_ready(client, &on_ready);
   discord_set_on_message_create(client, &on_message_create);
 
@@ -107,7 +102,6 @@ cleanup:
   if (client != 0)
     discord_cleanup(client);
   ccord_global_cleanup();
-  close_database();
   free_config();
   return returnStatusCode;
 }
