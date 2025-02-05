@@ -4,9 +4,9 @@
 #include <concord/discord.h>
 
 typedef struct {
-  const char *name;
-  const char **aliases;
-  void (*run)(struct discord *client, const struct discord_message *event);
+	const char *name;
+	const char **aliases;
+	void (*run)(struct discord *client, const struct discord_message *event);
 } command;
 
 // get command by name
