@@ -7,11 +7,13 @@
 #include "database.h"
 #include "utils.h"
 
-void on_ready(struct discord *client, const struct discord_ready *event) {
+void on_ready(struct discord *client, const struct discord_ready *event)
+{
 	log_info("Logged in as %s!", event->user->username);
 }
 
-void on_message_create(struct discord *client, const struct discord_message *event) {
+void on_message_create(struct discord *client, const struct discord_message *event)
+{
 	// return if the message author is a bot
 	if (event->author->bot)
 		return;
@@ -33,7 +35,8 @@ void on_message_create(struct discord *client, const struct discord_message *eve
 	cmd->run(client, event);
 }
 
-void on_voice_state_update(struct discord *client, const struct discord_voice_state *event) {
+void on_voice_state_update(struct discord *client, const struct discord_voice_state *event)
+{
 	if (event->channel_id != 0) {
 		// member join channel
 		log_info(">> Member %s joined %lu", event->member->user->username, event->channel_id);
@@ -43,7 +46,8 @@ void on_voice_state_update(struct discord *client, const struct discord_voice_st
 	}
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	// get files names
 	const char *config_file = argc > 2 ? argv[2] : "./config.json";
 	const char *database_file = argc > 3 ? argv[3] : "./database.db";

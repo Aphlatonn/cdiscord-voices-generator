@@ -2,7 +2,8 @@
 
 #include "config.h"
 
-struct config get_config(struct discord *client) {
+struct config get_config(struct discord *client)
+{
 	struct config conf = {0};
 	char *path[3] = {"user_config", "", ""};
 	struct ccord_szbuf_readonly json;

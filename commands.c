@@ -6,7 +6,8 @@
 #include "config.h"
 #include "utils.h"
 
-void cmd_help(struct discord *client, const struct discord_message *event) {
+void cmd_help(struct discord *client, const struct discord_message *event)
+{
 	// get user data
 	struct user_data *userdata = discord_get_data(client);
 
@@ -29,7 +30,8 @@ static command commands[] = {
 };
 
 // get command by name
-const command *get_command(const char *name) {
+const command *get_command(const char *name)
+{
 	for (int i = 0; commands[i].name != 0; i++) {
 		if (starts_with(name, commands[i].name))
 			return &commands[i];

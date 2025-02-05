@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 typedef struct {
-  uint64_t id;
-  uint64_t voice;
-  uint64_t reject_voice;
-  uint64_t logs_channel;
+	uint64_t id;
+	uint64_t voice;
+	uint64_t reject_voice;
+	uint64_t logs_channel;
 } guild_data;
 
 // initialize databse func
