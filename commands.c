@@ -3,16 +3,16 @@
 #include <string.h>
 
 #include "commands.h"
-#include "config.h"
+#include "data.h"
 #include "utils.h"
 
 void cmd_help(struct discord *client, const struct discord_message *event)
 {
-	// get user data
-	struct user_data *userdata = discord_get_data(client);
+	// get client data
+	data_t *data = discord_get_data(client);
 
-	char buff[strlen(userdata->config.bot.prefix) + 20];
-	snprintf(buff, sizeof(buff), "commands prefix is %s", userdata->config.bot.prefix);
+	char buff[strlen(data->config.bot.prefix) + 20];
+	snprintf(buff, sizeof(buff), "commands prefix is %s", data->config.bot.prefix);
 
 	// send the message
 	struct discord_create_message params = {
