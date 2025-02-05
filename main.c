@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "commands.h"
-#include "config.h"
+#include "concord/discord_codecs.h"
+#include "data.h"
 #include "database.h"
 #include "utils.h"
 
@@ -19,13 +20,13 @@ void on_message_create(struct discord *client, const struct discord_message *eve
 		return;
 
 	// get user data
-	struct user_data *userdata = discord_get_data(client);
+	data_t *data = discord_get_data(client);
 
-	if (!starts_with(event->content, userdata->config.bot.prefix))
+	if (!starts_with(event->content, data->config.bot.prefix))
 		return;
 
 	// find the command
-	const command *cmd = get_command(event->content + strlen(userdata->config.bot.prefix));
+	const command *cmd = get_command(event->content + strlen(data->config.bot.prefix));
 
 	// return if the commands was not found
 	if (cmd == 0)
@@ -44,6 +45,23 @@ void on_voice_state_update(struct discord *client, const struct discord_voice_st
 		// member left channel
 		log_info(">> Member %s left %lu", event->member->user->username, event->channel_id);
 	}
+}
+
+struct config get_config(struct discord *client)
+{
+	struct config conf = {0};
+	char *path[3] = {"user_config", "", ""};
+	struct ccord_szbuf_readonly json;
+
+	/* config.bot */
+	path[1] = "bot";
+
+	/* config.bot.prefix */
+	path[2] = "prefix";
+	json = discord_config_get_field(client, path, 3);
+	snprintf(conf.bot.prefix, sizeof(conf.bot.prefix), "%.*s", (int)json.size, json.start);
+
+	return conf;
 }
 
 int main(int argc, char *argv[])
@@ -71,7 +89,7 @@ int main(int argc, char *argv[])
 	}
 
 	// set client data
-	struct user_data data = {.config = get_config(client)};
+	data_t data = {.config = get_config(client)};
 	discord_set_data(client, &data);
 
 	// enable cache
