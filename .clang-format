@@ -11,17 +11,18 @@ AlignOperands: true  # Align operands for better readability
 AlignTrailingComments: false  # Do not align trailing comments
 ContinuationIndentWidth: 4  # Indent continuation lines by 4 spaces (will be tabs in your case)
 
-# Function formatting
 BraceWrapping:
-  AfterFunction: false  # Keep the opening brace on the same line as the function definition
-  AfterClass: true      # Opening brace for classes will be on the next line
-  AfterControlStatement: true  # Opening brace for control statements will be on the next line
-  AfterEnum: true       # Opening brace for enums will be on the next line
-  AfterNamespace: true  # Opening brace for namespaces will be on the next line
-  AfterStruct: true     # Opening brace for structs will be on the next line
-  AfterUnion: true      # Opening brace for unions will be on the next line
-  BeforeElse: false     # Don't break before else
-  BeforeCatch: false    # Don't break before catch
+  AfterFunction: true  # Ensure braces for functions go on the next line
+  AfterClass: false      # Keep class braces on the same line
+  AfterControlStatement: MultiLine  # Keep control statements consistent
+  AfterEnum: false       # Keep enum braces on the same line
+  AfterNamespace: false  # Keep namespace braces on the same line
+  AfterStruct: false     # Keep struct braces on the same line
+  AfterUnion: false      # Keep union braces on the same line
+  BeforeElse: false      # Keep else on the same line
+  BeforeCatch: false     # Keep catch on the same line
+  IndentBraces: false    # Do not indent opening braces
+BreakBeforeBraces: Custom
 
 # Function style
 AllowShortFunctionsOnASingleLine: None  # Disable short functions on a single line
