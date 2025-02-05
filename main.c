@@ -3,120 +3,90 @@
 #include <string.h>
 
 #include "commands.h"
+#include "config.h"
 #include "database.h"
-#include "parser.h"
 #include "utils.h"
 
 void on_ready(struct discord *client, const struct discord_ready *event) {
-  log_info("Logged in as %s!", event->user->username);
+	log_info("Logged in as %s!", event->user->username);
 }
 
-void on_message_create(struct discord *client,
-                       const struct discord_message *event) {
-  // return if the message author is a bot
-  if (event->author->bot)
-    return;
+void on_message_create(struct discord *client, const struct discord_message *event) {
+	// return if the message author is a bot
+	if (event->author->bot)
+		return;
 
-  // get the prefix
-  char *prefix = 0;
-  switch (config_get_str("bot.prefix", &prefix)) {
-  case CONFIG_NO_ENTRY:
-    prefix = "!";
-    log_warn("CONFIG: bot.prefix entry is not set");
-    break;
-  case CONFIG_NO_VALUE:
-    prefix = "!";
-    log_warn("CONFIG: bot.prefix has no value");
-    break;
-  case CONFIG_GOOD:
-    break;
-  };
+	// get user data
+	struct user_data *userdata = discord_get_data(client);
 
-  if (!starts_with(event->content, prefix))
-    return;
+	if (!starts_with(event->content, userdata->config.bot.prefix))
+		return;
 
-  // find the command
-  const command *cmd = get_command(event->content + strlen(prefix));
+	// find the command
+	const command *cmd = get_command(event->content + strlen(userdata->config.bot.prefix));
 
-  // return if the commands was not found
-  if (cmd == 0)
-    return;
+	// return if the commands was not found
+	if (cmd == 0)
+		return;
 
-  // run the command
-  cmd->run(client, event);
+	// run the command
+	cmd->run(client, event);
 }
 
-void on_voice_state_update(struct discord *client,
-                           const struct discord_voice_state *event) {
-  if (event->channel_id != 0) {
-    // member join channel
-    log_info(">> Member %s join %lu", event->member->user->username,
-             event->channel_id);
-
-  } else {
-    // member left channel
-    log_info(">> Member %s left %lu", event->member->user->username,
-             event->channel_id);
-  }
+void on_voice_state_update(struct discord *client, const struct discord_voice_state *event) {
+	if (event->channel_id != 0) {
+		// member join channel
+		log_info(">> Member %s joined %lu", event->member->user->username, event->channel_id);
+	} else {
+		// member left channel
+		log_info(">> Member %s left %lu", event->member->user->username, event->channel_id);
+	}
 }
 
 int main(int argc, char *argv[]) {
-  int returnStatusCode = -1;
+	// get files names
+	const char *config_file = argc > 2 ? argv[2] : "./config.json";
+	const char *database_file = argc > 3 ? argv[3] : "./database.db";
 
-  // get config files names
-  const char *user_config_file = argc > 1 ? argv[1] : "./user-config.conf";
-  const char *bot_config_file = argc > 2 ? argv[2] : "./bot-config.json";
-  const char *database_file = argc > 3 ? argv[3] : "./database.db";
+	// initialize the database
+	if (initialize_database(database_file) != 0) {
+		log_error("Couldn't initialize database");
+		return -1;
+	} else {
+		log_info("Database has been initialized");
+	}
 
-  // load the config
-  if (load_config(user_config_file) != 0) {
-    log_error("Couldn't open config file");
-    goto cleanup;
-  } else {
-    log_info("Config has been loaded");
-  }
+	// login to discord
+	ccord_global_init();
+	struct discord *client = discord_config_init(config_file);
+	if (client == 0) {
+		log_error("Couldn't initialize client");
+		return -1;
+	} else {
+		log_info("Client has been initialized");
+	}
 
-  // initialize the database
-  if (initialize_database(database_file) != 0) {
-    log_error("Couldn't initialize database");
-    goto cleanup;
-  } else {
-    log_info("Database has been initialized");
-  }
+	// set client data
+	struct user_data data = {.config = get_config(client)};
+	discord_set_data(client, &data);
 
-  // login to discord
-  ccord_global_init();
-  struct discord *client = discord_config_init(bot_config_file);
-  if (client == 0) {
-    log_error("Couldn't initialize client");
-    goto cleanup;
-  } else {
-    log_info("Client has been initialized");
-  }
+	// enable cache
+	discord_cache_enable(client, DISCORD_CACHE_GUILDS);
+	discord_cache_enable(client, DISCORD_CACHE_MESSAGES);
 
-  returnStatusCode = 0;
+	// add voice state update intent and message intent
+	discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
+	discord_add_intents(client, DISCORD_GATEWAY_MESSAGE_CONTENT);
 
-  // enable cache
-  discord_cache_enable(client, DISCORD_CACHE_GUILDS);
-  discord_cache_enable(client, DISCORD_CACHE_MESSAGES);
+	// register events
+	discord_set_on_ready(client, &on_ready);
+	discord_set_on_message_create(client, &on_message_create);
+	discord_set_on_voice_state_update(client, &on_voice_state_update);
 
-  // add voice state update intent and message intent
-  discord_add_intents(client, DISCORD_GATEWAY_VOICE_STATE_UPDATE);
-  discord_add_intents(client, DISCORD_GATEWAY_MESSAGE_CONTENT);
+	// run the client
+	discord_run(client);
 
-  // register events
-  discord_set_on_ready(client, &on_ready);
-  discord_set_on_message_create(client, &on_message_create);
-  discord_set_on_voice_state_update(client, &on_voice_state_update);
-
-  // run the client
-  discord_run(client);
-
-// release memory
-cleanup:
-  if (client != 0)
-    discord_cleanup(client);
-  ccord_global_cleanup();
-  free_config();
-  return returnStatusCode;
+	discord_cleanup(client);
+	ccord_global_cleanup();
+	return 0;
 }
